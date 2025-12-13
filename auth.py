@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -97,20 +97,21 @@ def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), 
         raise HTTPException(status_code=401, detail="invalid credentials")
     access_token, expires_in = create_access_token_for_user(user.id)
     refresh_token, expires_at = create_refresh_token_for_user(db, user.id)
-    # set httpOnly cookie with refresh token
+    
     response.set_cookie(
         key=REFRESH_COOKIE_NAME,
         value=refresh_token,
         httponly=True,
         samesite="lax",
-        # secure=True,
+        secure=True,
         expires=int((expires_at - datetime.utcnow()).total_seconds()),
         path="/",
     )
     return {"access_token": access_token, "expires_in": expires_in}
 
 @router.post("/refresh", response_model=Token)
-def refresh(response: Response, refresh_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+def refresh(request: Request, response: Response, db: Session = Depends(get_db)):
+    refresh_token = request.cookies.get(REFRESH_COOKIE_NAME)
     if not refresh_token:
         raise HTTPException(status_code=401, detail="no refresh token")
     try:
@@ -135,7 +136,7 @@ def refresh(response: Response, refresh_token: Optional[str] = Cookie(None), db:
         value=new_refresh_token,
         httponly=True,
         samesite="lax",
-        # secure=True,
+        secure=True,
         expires=int((new_expires_at - datetime.utcnow()).total_seconds()),
         path="/",
     )
@@ -143,7 +144,8 @@ def refresh(response: Response, refresh_token: Optional[str] = Cookie(None), db:
     return {"access_token": access_token, "expires_in": expires_in}
 
 @router.post("/logout", status_code=204)
-def logout(response: Response, refresh_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+def logout(request: Request, response: Response, db: Session = Depends(get_db)):
+    refresh_token = request.cookies.get(REFRESH_COOKIE_NAME)
     if refresh_token:
         try:
             payload = jwt.decode(refresh_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])

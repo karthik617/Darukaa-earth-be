@@ -22,9 +22,9 @@ def create_project(db: Session, name: str, description: str | None = None, owner
     db.refresh(p)
     return p
 
-def list_projects(db: Session):
+def list_projects(db: Session,user_id: int):
     # return projects with site counts
-    rows = db.query(models.Project.id, models.Project.name, func.count(models.Site.id).label("site_count")).outerjoin(models.Site).group_by(models.Project.id).all()
+    rows = db.query(models.Project.id, models.Project.name, func.count(models.Site.id).label("site_count")).outerjoin(models.Site,models.Site.project_id == models.Project.id).filter(models.Project.owner_id == user_id).group_by(models.Project.id,models.Project.name).all()
     return [{"id": r.id, "name": r.name, "site_count": r.site_count} for r in rows]
 
 def get_project(db: Session, project_id: int):
@@ -113,8 +113,8 @@ def _create_project(payload: schemas.ProjectCreate, db: Session = Depends(get_db
 @router.get("/projects", response_model=list[schemas.ProjectListItem])
 def _list_projects(db: Session = Depends(get_db), authorization: str = Header(None)):
     # require auth
-    _ = get_current_user_from_header(authorization, db)
-    return list_projects(db)
+    user = get_current_user_from_header(authorization, db)
+    return list_projects(db,user.id)
 
 @router.get("/projects/{project_id}", response_model=schemas.ProjectOut)
 def _get_project(project_id: int, db: Session = Depends(get_db), authorization: str = Header(None)):
