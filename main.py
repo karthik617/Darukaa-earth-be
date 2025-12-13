@@ -14,7 +14,8 @@ app = FastAPI(title="Darukaa.Earth API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5175"
+        "http://localhost:5175",
+        "https://darukaa-earth-fe.onrender.com"
     ],
     allow_credentials=True,
     allow_methods=["*"],
