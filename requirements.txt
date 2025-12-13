@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+SQLAlchemy
+psycopg2-binary
+pydantic
+python-dotenv
+passlib[argon2]
+python-jose[cryptography]
+pytest
+pydantic[email]
+python-multipart
+geoalchemy2
+shapely
+alembic

@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*$py.class
+# C extensions
+.idea
+# Distribution / packaging
+.Python
+.env
+.venv
+env/
+venv/
+ENV/
+*.http
+*.sqlite
+docker-compose.yml
