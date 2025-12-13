@@ -103,7 +103,7 @@ def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), 
         value=refresh_token,
         httponly=True,
         samesite="lax",
-        # secure=True in production
+        # secure=True,
         expires=int((expires_at - datetime.utcnow()).total_seconds()),
         path="/",
     )
