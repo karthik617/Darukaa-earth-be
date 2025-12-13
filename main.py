@@ -26,7 +26,7 @@ while True:
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
             conn.commit()
         print("PostGIS enabled")
-        seed()
+        # seed()
         break
     except OperationalError:
         print("Waiting for Postgres...")

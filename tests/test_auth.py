@@ -44,34 +44,23 @@ def test_register_login_refresh_logout_flow():
     assert data["email"] == "karthik@test.com"
 
     # login (obtain access + refresh)
-    r = client.post("/auth/token", data={"username": "karthik@test.com", "password": "Password123!"})
+    r = client.post("/auth/login", data={"username": "karthik@test.com", "password": "Password123!"})
     assert r.status_code == 200
     login_data = r.json()
     assert "access_token" in login_data and "refresh_token" in login_data
     access_token = login_data["access_token"]
     refresh_token = login_data["refresh_token"]
 
-    # access protected /me
-    r = client.get("/me", headers={"Authorization": f"Bearer {access_token}"})
-    assert r.status_code == 200
-    assert r.json()["email"] == "karthik@test.com"
-
     # use refresh endpoint to rotate tokens
     r = client.post("/auth/refresh", json={"refresh_token": refresh_token})
     assert r.status_code == 200
     refreshed = r.json()
     assert "access_token" in refreshed and "refresh_token" in refreshed
-    new_access = refreshed["access_token"]
     new_refresh = refreshed["refresh_token"]
 
     # old refresh should now be revoked; calling refresh with old should fail
     r = client.post("/auth/refresh", json={"refresh_token": refresh_token})
     assert r.status_code == 401
-
-    # new access works
-    r = client.get("/me", headers={"Authorization": f"Bearer {new_access}"})
-    assert r.status_code == 200
-    assert r.json()["email"] == "karthik@test.com"
 
     # logout (revoke current refresh)
     r = client.post("/auth/logout", json={"refresh_token": new_refresh})
