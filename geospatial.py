@@ -191,10 +191,14 @@ def _list_projects(db: Session = Depends(get_db), authorization: str = Header(No
 def _get_project(
     project_id: int, db: Session = Depends(get_db), authorization: str = Header(None)
 ):
-    _ = get_current_user_from_header(authorization, db)
+    user = get_current_user_from_header(authorization, db)
     p = get_project(db, project_id)
     if not p:
         raise HTTPException(status_code=404, detail="Project not found")
+    if p.owner_id != user.id:
+        raise HTTPException(
+            status_code=403, detail="Not authorized to access this project"
+        )
     return p
 
 
