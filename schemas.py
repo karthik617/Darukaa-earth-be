@@ -8,9 +8,7 @@ class UserCreate(BaseModel):
 
 class Token(BaseModel):
     access_token: str
-    token_type: Optional[str] = "bearer"
     expires_in: Optional[int] = None
-    refresh_token: Optional[str] = None 
 
 class UserOut(BaseModel):
     id: int
