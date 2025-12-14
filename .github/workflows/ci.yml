@@ -1,0 +1,43 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  backend-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Set environment variables for tests
+        run: |
+          echo "JWT_SECRET=test-secret" >> $GITHUB_ENV
+          echo "JWT_ALGORITHM=HS256" >> $GITHUB_ENV
+          echo "ACCESS_TOKEN_EXPIRE_MINUTES=15" >> $GITHUB_ENV
+          echo "REFRESH_TOKEN_EXPIRE_DAYS=30" >> $GITHUB_ENV
+          echo "REFRESH_COOKIE_NAME=refresh_token" >> $GITHUB_ENV
+
+      - name: Run lint checks
+        run: |
+          pip install flake8
+          flake8 .
+
+      - name: Run unit tests
+        run: |
+          PYTEST_RUNNING=1 PYTHONPATH=. pytest -v

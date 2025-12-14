@@ -12,3 +12,8 @@ python-multipart
 geoalchemy2
 shapely
 alembic
+black 
+flake8 
+isort 
+pre-commit
+httpx

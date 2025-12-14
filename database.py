@@ -1,5 +1,7 @@
+import os
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from config import DATABASE_URL
 
@@ -7,10 +9,19 @@ from config import DATABASE_URL
 class Base(DeclarativeBase):
     pass
 
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args, future=True)
+
+URI = DATABASE_URL
+IS_TESTING = os.getenv("PYTEST_RUNNING") == "1"
+if IS_TESTING:
+    URI = "sqlite:///./test.db"
+    connect_args = {"check_same_thread": False}
+else:
+    connect_args = {}
+
+engine = create_engine(URI, connect_args=connect_args, future=True)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)
+
 
 def get_db():
     db = SessionLocal()
