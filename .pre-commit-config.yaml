@@ -12,3 +12,4 @@ repos:
     hooks:
       - id: isort
         additional_dependencies: ["black"]
+        args: ["--profile", "black"]
