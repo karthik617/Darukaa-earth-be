@@ -32,7 +32,6 @@ jobs:
           echo "ACCESS_TOKEN_EXPIRE_MINUTES=15" >> $GITHUB_ENV
           echo "REFRESH_TOKEN_EXPIRE_DAYS=30" >> $GITHUB_ENV
           echo "REFRESH_COOKIE_NAME=refresh_token" >> $GITHUB_ENV
-          echo "PYTEST_RUNNING=1" >> $GITHUB_ENV
 
       - name: Run lint checks
         run: |
@@ -41,4 +40,4 @@ jobs:
 
       - name: Run unit tests
         run: |
-          PYTHONPATH=. pytest -v
+          PYTEST_RUNNING=1 PYTHONPATH=. pytest -v
