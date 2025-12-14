@@ -13,3 +13,5 @@ ENV/
 *.http
 *.sqlite
 docker-compose.yml
+.pytest_cache
+*.db
