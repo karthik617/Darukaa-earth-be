@@ -29,7 +29,9 @@ def on_startup():
     if IS_TESTING:
         return
     # Wait until Postgres is ready
-    while True:
+    max_retries = 120
+    retries = 0
+    while retries < max_retries:
         try:
             with engine.connect() as conn:
                 conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
@@ -38,7 +40,10 @@ def on_startup():
             break
         except OperationalError:
             print("Waiting for Postgres...")
+            retries += 1
             time.sleep(1)
+    else:
+        raise RuntimeError("Could not connect to Postgres after max retries")
 
     # Create tables
     Base.metadata.create_all(bind=engine)

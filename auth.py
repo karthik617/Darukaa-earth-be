@@ -16,12 +16,14 @@ from database import get_db
 from schemas import Token, UserCreate, UserOut
 
 # env
-JWT_SECRET = os.getenv("JWT_SECRET", "CHANGE_THIS_SECRET")
+JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30"))
 REFRESH_COOKIE_NAME = os.getenv("REFRESH_COOKIE_NAME", "refresh_token")
 
+if not JWT_SECRET:
+    raise ValueError("JWT_SECRET must be set to a secure value in production")
 
 pwd_context = CryptContext(
     schemes=["argon2"], deprecated="auto"
@@ -122,7 +124,7 @@ def login(
         httponly=True,
         samesite="lax",
         # secure=True,
-        secure=not os.getenv("PYTEST_RUNNING"),
+        secure=(os.getenv("PYTEST_RUNNING") != "1"),
         expires=int((expires_at - datetime.utcnow()).total_seconds()),
         path="/",
     )
@@ -163,7 +165,7 @@ def refresh(request: Request, response: Response, db: Session = Depends(get_db))
         httponly=True,
         samesite="lax",
         # secure=True,
-        secure=not os.getenv("PYTEST_RUNNING"),
+        secure=(os.getenv("PYTEST_RUNNING") != "1"),
         expires=int((new_expires_at - datetime.utcnow()).total_seconds()),
         path="/",
     )
